@@ -18,7 +18,8 @@ class LoginPage(BasePage):
         self.click(self.LOGIN_BUTTON)
     
     def is_login_successful(self):
-        return self.is_element_visible(self.SUCCESS_MESSAGE)
+        # Return True/False instead of the WebElement
+        return self.is_element_visible(self.SUCCESS_MESSAGE) is not False
     
     def get_error_message(self):
         return self.get_text(self.ERROR_MESSAGE)
