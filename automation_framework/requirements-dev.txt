@@ -1,0 +1,4 @@
+# Minimal requirements for running the login tests
+selenium==4.18.1
+pytest==8.0.0
+webdriver-manager==4.0.1
