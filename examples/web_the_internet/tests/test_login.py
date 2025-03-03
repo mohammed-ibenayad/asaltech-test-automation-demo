@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 from automation_framework.src.core.base.web_test_base import WebTestBase
-from examples.web_example.pages.login_page import LoginPage
+from examples.web_the_internet.pages.login_page import LoginPage
 
 class TestLogin(WebTestBase):
     
