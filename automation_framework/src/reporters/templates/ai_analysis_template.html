@@ -1,0 +1,318 @@
+<!-- automation_framework/src/ai_module/reporters/templates/ai_analysis_template.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            color: #444;
+        }
+        .summary-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .true-bug {
+            background-color: #ffecec;
+            border-left: 5px solid #f44336;
+        }
+        .false-positive {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+        }
+        .failure-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .failure-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-high {
+            background-color: #f44336;
+        }
+        .badge-medium {
+            background-color: #ff9800;
+        }
+        .badge-low {
+            background-color: #4caf50;
+        }
+        .category-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .error-message {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .stack-trace {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .collapsible {
+            cursor: pointer;
+            background-color: #f1f1f1;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-weight: bold;
+        }
+        .collapsible:after {
+            content: '\002B';
+            float: right;
+            font-weight: bold;
+        }
+        .active:after {
+            content: "\2212";
+        }
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: #f9f9f9;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: 30px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ title }}</h1>
+            <p>Generated: {{ timestamp }}</p>
+            <p>Model: {{ metadata.provider }} / {{ metadata.model }}</p>
+            <p>Analysis Duration: {{ "%.2f"|format(metadata.analysis_duration_seconds) }} seconds</p>
+        </header>
+        
+        <section>
+            <h2>Analysis Summary</h2>
+            <div class="summary-box">
+                <div class="summary-card">
+                    <h3>Total Failures</h3>
+                    <p class="stat">{{ stats.total }}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>True Bugs</h3>
+                    <p class="stat">{{ stats.true_bugs }} ({{ "%.1f"|format(stats.true_bug_percentage) }}%)</p>
+                </div>
+                <div class="summary-card">
+                    <h3>False Positives</h3>
+                    <p class="stat">{{ stats.false_positives }}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>High Confidence</h3>
+                    <p class="stat">{{ stats.high_confidence }}</p>
+                </div>
+            </div>
+            
+            <!-- Category Distribution -->
+            <h3>Issue Categories</h3>
+            <div class="summary-box">
+                {% for category, count in stats.categories.items() %}
+                <div class="summary-card">
+                    <h4>{{ category }}</h4>
+                    <p>{{ count }} failures</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Charts -->
+            <div class="chart-container">
+                <canvas id="categoriesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="bugTypeChart"></canvas>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Failure Analysis Details</h2>
+            
+            {% for result in results %}
+            <div class="failure-card {% if result.analysis.probability_true_bug > 0.5 %}true-bug{% else %}false-positive{% endif %}">
+                <div class="failure-header">
+                    <h3>{{ result.test_name }}</h3>
+                    <div>
+                        {% if result.analysis.probability_true_bug > 0.8 %}
+                            <span class="badge badge-high">High Probability Bug</span>
+                        {% elif result.analysis.probability_true_bug > 0.5 %}
+                            <span class="badge badge-medium">Medium Probability Bug</span>
+                        {% else %}
+                            <span class="badge badge-low">Low Probability Bug</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <p><strong>Category:</strong> 
+                        <span class="category-tag">{{ result.analysis.category }}</span>
+                        <span class="category-tag">{{ result.analysis.subcategory }}</span>
+                    </p>
+                    <p><strong>Confidence:</strong> {{ "%.1f"|format(result.analysis.confidence * 100) }}%</p>
+                    <p><strong>Analysis:</strong> {{ result.analysis.reasoning }}</p>
+                    
+                    {% if result.analysis.suggested_fix %}
+                    <p><strong>Suggested Fix:</strong> {{ result.analysis.suggested_fix }}</p>
+                    {% endif %}
+                </div>
+                
+                <button class="collapsible">Failure Details</button>
+                <div class="content">
+                    <p><strong>Error Type:</strong> {{ result.failure_data.error_type }}</p>
+                    <div class="error-message">{{ result.failure_data.error_message }}</div>
+                    <p><strong>Stack Trace:</strong></p>
+                    <div class="stack-trace">{{ result.failure_data.stack_trace }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+    
+    <!-- Include Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // JavaScript for collapsible sections
+        var coll = document.getElementsByClassName("collapsible");
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+        
+        // Create charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Categories chart
+            const categoryNames = [{% for category in stats.categories.keys() %}'{{ category }}',{% endfor %}];
+            const categoryCounts = [{% for count in stats.categories.values() %}{{ count }},{% endfor %}];
+            
+            const categoryCtx = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryNames,
+                    datasets: [{
+                        label: 'Failures by Category',
+                        data: categoryCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Bug type chart
+            const bugTypeCtx = document.getElementById('bugTypeChart').getContext('2d');
+            new Chart(bugTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['True Bugs', 'False Positives'],
+                    datasets: [{
+                        data: [{{ stats.true_bugs }}, {{ stats.false_positives }}],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Bug Classification'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

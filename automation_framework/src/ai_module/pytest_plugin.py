@@ -1,76 +1,56 @@
-# automation_framework/tests/conftest.py
+# automation_framework/src/ai_module/pytest_plugin.py
 import pytest
 import json
-import traceback
 from pathlib import Path
-import logging
+import traceback
 from datetime import datetime
+import logging
 
-# Import AI module components
-from automation_framework.src.ai_module.config.ai_settings import ai_settings
-from automation_framework.src.ai_module.analyzers.failure_analyzer import FailureAnalyzer
+from .analyzers.failure_analyzer import FailureAnalyzer
+from .config.ai_settings import ai_settings
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
-# Define output directory for test results
+# Constants
 OUTPUT_DIR = Path("test_results")
 FAILURES_FILE = OUTPUT_DIR / "failures.json"
 
 def pytest_addoption(parser):
-    """Add command-line options for browser and AI configuration"""
-    # Existing browser options
-    parser.addoption("--browser", default="chrome", help="Browser to run tests on")
-    parser.addoption("--headless", action="store_true", help="Run browser in headless mode")
-    
-    # New AI analysis options
-    parser.addoption(
+    """Add command-line options for AI configuration"""
+    group = parser.getgroup("ai_analysis", "AI-powered test analysis")
+    group.addoption(
         "--ai-provider",
         action="store",
         default="openai",
         help="AI provider to use for analysis (openai/deepseek)"
     )
-    parser.addoption(
+    group.addoption(
         "--model-name",
         action="store",
         help="Specific model name to use for analysis (optional)"
     )
-    parser.addoption(
+    group.addoption(
         "--analyze-failures",
         action="store_true",
         help="Automatically analyze failures after test run"
     )
 
-@pytest.fixture(scope="session")
-def ai_config(request):
-    """Fixture to provide AI configuration for test analysis"""
-    provider = request.config.getoption("--ai-provider")
-    model_name = request.config.getoption("--model-name")
-    
-    try:
-        return ai_settings.get_model_config(provider, model_name)
-    except ValueError as e:
-        logger.warning(f"AI configuration error: {str(e)}")
-        logger.warning("Falling back to default OpenAI configuration")
-        return ai_settings.get_model_config("openai")
-
-@pytest.fixture(scope="session")
-def failure_analyzer(ai_config):
-    """Fixture to provide a configured FailureAnalyzer instance"""
-    return FailureAnalyzer(ai_config)
-
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config):
     """Set up test environment and ensure output directories exist"""
+    if not config.option.analyze_failures:
+        return
+
     # Create output directory if it doesn't exist
     OUTPUT_DIR.mkdir(exist_ok=True)
     
     # Initialize failures file for this test run
-    if config.getoption("--analyze-failures"):
-        # Create an empty failures file
-        with open(FAILURES_FILE, "w") as f:
-            f.write("")
+    with open(FAILURES_FILE, "w") as f:
+        f.write("")
+    
+    logger.info("AI failure analysis enabled")
 
-def format_traceback(excinfo):
+def _format_traceback(excinfo):
     """Format traceback in a readable way"""
     return ''.join(traceback.format_exception(
         excinfo.type,
@@ -78,25 +58,20 @@ def format_traceback(excinfo):
         excinfo.tb
     ))
 
-@pytest.hookimpl(hookwrapper=True)
+@pytest.hookimpl(trylast=True)
 def pytest_runtest_makereport(item, call):
     """Collect test failures during the call phase"""
-    outcome = yield
-    report = outcome.get_result()
-    
-    if report.when == "call" and report.failed:
+    if not item.config.option.analyze_failures:
+        return
+        
+    if call.when == "call" and call.excinfo is not None:
         # Ensure directory exists
         OUTPUT_DIR.mkdir(exist_ok=True)
         
-        # Get formatted traceback if available
-        if call.excinfo:
-            trace = format_traceback(call.excinfo)
-            error_type = call.excinfo.type.__name__
-            error_message = str(call.excinfo.value)
-        else:
-            trace = "No traceback available"
-            error_type = "Unknown"
-            error_message = "Test failed without exception"
+        # Get formatted traceback
+        trace = _format_traceback(call.excinfo)
+        error_type = call.excinfo.type.__name__
+        error_message = str(call.excinfo.value)
 
         # Create failure data
         failure_data = {
@@ -108,7 +83,7 @@ def pytest_runtest_makereport(item, call):
             "stack_trace": trace,
             "environment": item.config.getoption("--env", default="test"),
             "test_duration": call.duration if hasattr(call, 'duration') else 0.0,
-            "test_phase": report.when,
+            "test_phase": "call",
             "timestamp": datetime.now().isoformat()
         }
         
@@ -119,9 +94,10 @@ def pytest_runtest_makereport(item, call):
         
         logger.info(f"Test failure recorded: {item.nodeid}")
 
+@pytest.hookimpl(trylast=True)
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """Run analysis on failures at the end of test execution if enabled"""
-    if not config.getoption("--analyze-failures") or exitstatus == 0:
+    if not config.option.analyze_failures or exitstatus == 0:
         # Skip analysis if not enabled or all tests passed
         return
     
@@ -145,8 +121,15 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         return
     
     try:
-        # Create analyzer with configured AI provider
-        analyzer = FailureAnalyzer(ai_config(config))
+        # Get provider and model from options
+        provider = config.getoption("--ai-provider", default="openai")
+        model_name = config.getoption("--model-name", default=None)
+        
+        # Create configuration
+        ai_config = ai_settings.get_model_config(provider, model_name)
+        
+        # Create analyzer
+        analyzer = FailureAnalyzer(ai_config)
         
         # Analyze failures
         logger.info(f"Analyzing {len(failures)} test failures...")
@@ -167,7 +150,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         terminalreporter.write_line(f"Model: {metadata.get('model')}")
         
         # Count true bugs vs false positives
-        true_bugs = sum(1 for r in results.get("results", []) 
+        results_list = results.get("results", [])
+        true_bugs = sum(1 for r in results_list 
                     if r.get("analysis", {}).get("probability_true_bug", 0) > 0.5)
         
         terminalreporter.write_line(f"Likely true bugs: {true_bugs}")
