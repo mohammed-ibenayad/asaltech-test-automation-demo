@@ -58,6 +58,7 @@ echo "Running web tests from The Internet example app..."
 python -m pytest examples/web_the_internet/tests/ \
   --browser=$BROWSER \
   $HEADLESS \
+  --analyze-failures \
   -v
 
 echo "======================================================"

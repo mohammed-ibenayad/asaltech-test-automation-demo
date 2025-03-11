@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web The Internet - AI-Powered Test Failure Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0c4da2;
+            --primary-gradient-start: #1565c0;
+            --primary-gradient-end: #0a3a79;
+            --secondary-color: #e8f0fe;
+            --accent-color: #1e88e5;
+            --text-primary: #2c3e50;
+            --text-secondary: #546e7a;
+            --text-tertiary: #78909c;
+            --background-color: #f5f7fa;
+            --card-background: #ffffff;
+            --border-color: #e1e7ef;
+            --error-color: #e53935;
+            --warning-color: #f57c00;
+            --success-color: #43a047;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            color: var(--text-primary);
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(to right, var(--primary-gradient-start), var(--primary-gradient-end));
+            color: white;
+            padding: 24px 32px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .header-info-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-info-item i {
+            margin-right: 8px;
+            opacity: 0.8;
+        }
+        
+        .header-info-item p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .panel {
+            background-color: var(--card-background);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+        
+        .section {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+            position: relative;
+            padding-left: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .stat-value.error {
+            color: var(--error-color);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-container {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            height: 300px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .failure-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .failure-header {
+            background-color: #fef2f2;
+            border-bottom: 1px solid #fecaca;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .failure-title {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--warning-color);
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        
+        .status-badge i {
+            margin-right: 4px;
+        }
+        
+        .failure-body {
+            padding: 16px;
+        }
+        
+        .category-tag {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .detail-item {
+            margin-bottom: 12px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-right: 4px;
+        }
+        
+        .detail-text {
+            color: var(--text-primary);
+        }
+        
+        .enterprise-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #d0e1fd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 12px;
+        }
+        
+        .enterprise-button:hover {
+            background-color: #d6e6ff;
+        }
+        
+        .enterprise-button i {
+            margin-left: 8px;
+        }
+        
+        .collapsible-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #f8fafc;
+        }
+        
+        .error-block {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 12px 0;
+            color: #b91c1c;
+        }
+        
+        .stack-trace {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 12px 0;
+            color: var(--text-tertiary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> Web The Internet - AI-Powered Failure Analysis</h1>
+            <div class="header-info">
+                <div class="header-info-item">
+                    <i class="fas fa-calendar"></i>
+                    <p>Generated: 2025-03-11 11:27:25</p>
+                </div>
+                <div class="header-info-item">
+                    <i class="fas fa-microchip"></i>
+                    <p>Model: openai / gpt-3.5-turbo</p>
+                </div>
+                <div class="header-info-item">
+                    <i class="fas fa-clock"></i>
+                    <p>Analysis Duration: 4.43 seconds</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Analysis Summary</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Failures</div>
+                        <div class="stat-value">2</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">True Bugs</div>
+                        <div class="stat-value error">2 (100.0%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">False Positives</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">High Confidence</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="section-header">
+                    <h2 class="section-title">Issue Categories</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">UI/Visual Bug</div>
+                        <div class="stat-value">1 failures</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">UI/Element Interaction</div>
+                        <div class="stat-value">1 failures</div>
+                    </div>
+                    
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Failures by Category</div>
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Bug Classification</div>
+                        <canvas id="bugTypeChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Failure Analysis Details</h2>
+                </div>
+                
+                
+                <div class="failure-card">
+                    <div class="failure-header">
+                        <div class="failure-title">examples/web_the_internet/tests/test_iframe.py::TestIFrame::test_iframe_editor_basic_interaction</div>
+                        <div class="status-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            
+                                High Probability Bug
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="failure-body">
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="category-tag">UI/Visual Bug</span>
+                            <span class="category-tag">Missing Text Content</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Confidence:</span>
+                            <span class="detail-text">80.0%</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Analysis:</span>
+                            <p class="detail-text">The assertion failure indicates that the expected default text &#39;Your content goes here.&#39; was not found in the editor, suggesting a potential UI/Visual bug.</p>
+                        </div>
+                        
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Suggested Fix:</span>
+                            <p class="detail-text">Check the implementation of the editor to ensure that the default text is correctly displayed and accessible for validation.</p>
+                        </div>
+                        
+                        
+                        <button class="enterprise-button" id="failure1-btn">
+                            View Failure Details
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        
+                        <div class="collapsible-content" id="failure1-content">
+                            <div style="padding: 16px;">
+                                <div class="detail-item">
+                                    <span class="detail-label">Error Type:</span>
+                                    <span class="detail-text">AssertionError</span>
+                                </div>
+                                
+                                <div class="error-block">Default text not found in editor
+assert &#39;Your content goes here.&#39; in &#39;&#39;</div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Stack Trace:</span>
+                                </div>
+                                
+                                <div class="stack-trace">Traceback (most recent call last):
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 345, in from_call
+    result: Optional[TResult] = func()
+                                ^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 266, in &lt;lambda&gt;
+    lambda: ihook(item=item, **kwds), when=when, reraise=reraise
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\threadexception.py&#34;, line 87, in pytest_runtest_call
+    yield from thread_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\threadexception.py&#34;, line 63, in thread_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\unraisableexception.py&#34;, line 90, in pytest_runtest_call
+    yield from unraisable_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\unraisableexception.py&#34;, line 65, in unraisable_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\logging.py&#34;, line 839, in pytest_runtest_call
+    yield from self._runtest_for(item, &#34;call&#34;)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\logging.py&#34;, line 822, in _runtest_for
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\capture.py&#34;, line 882, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\skipping.py&#34;, line 257, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 181, in pytest_runtest_call
+    raise e
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 173, in pytest_runtest_call
+    item.runtest()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\python.py&#34;, line 1836, in runtest
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\python.py&#34;, line 193, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\tests\test_iframe.py&#34;, line 19, in test_iframe_editor_basic_interaction
+    assert &#34;Your content goes here.&#34; in default_text, &#34;Default text not found in editor&#34;
+AssertionError: Default text not found in editor
+assert &#39;Your content goes here.&#39; in &#39;&#39;
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="failure-card">
+                    <div class="failure-header">
+                        <div class="failure-title">examples/web_the_internet/tests/test_iframe.py::TestIFrame::test_iframe_editor_text_formatting</div>
+                        <div class="status-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            
+                                High Probability Bug
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="failure-body">
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="category-tag">UI/Element Interaction</span>
+                            <span class="category-tag">Element State Manipulation</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Confidence:</span>
+                            <span class="detail-text">80.0%</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Analysis:</span>
+                            <p class="detail-text">The error message &#39;invalid element state&#39; and the stack trace point towards an issue with the state of the element during interaction.</p>
+                        </div>
+                        
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Suggested Fix:</span>
+                            <p class="detail-text">Ensure that the element is in the correct state before attempting to interact with it. This may involve waiting for the element to be clickable or visible before performing actions on it.</p>
+                        </div>
+                        
+                        
+                        <button class="enterprise-button" id="failure2-btn">
+                            View Failure Details
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        
+                        <div class="collapsible-content" id="failure2-content">
+                            <div style="padding: 16px;">
+                                <div class="detail-item">
+                                    <span class="detail-label">Error Type:</span>
+                                    <span class="detail-text">InvalidElementStateException</span>
+                                </div>
+                                
+                                <div class="error-block">Message: invalid element state
+  (Session info: chrome=133.0.6943.142)
+Stacktrace:
+	GetHandleVerifier [0x01170B43+25139]
+	(No symbol) [0x011013F4]
+	(No symbol) [0x00FE0340]
+	(No symbol) [0x0101F923]
+	(No symbol) [0x0104CFCC]
+	(No symbol) [0x0101D9A4]
+	(No symbol) [0x0104D244]
+	(No symbol) [0x0106E778]
+	(No symbol) [0x0104CDC6]
+	(No symbol) [0x0101BDE9]
+	(No symbol) [0x0101D124]
+	GetHandleVerifier [0x01474373+3185251]
+	GetHandleVerifier [0x0149291A+3309578]
+	GetHandleVerifier [0x0148CF42+3286578]
+	GetHandleVerifier [0x01207AE0+643536]
+	(No symbol) [0x0110A20D]
+	(No symbol) [0x011070B8]
+	(No symbol) [0x01107257]
+	(No symbol) [0x010F9E00]
+	BaseThreadInitThunk [0x7552FCC9+25]
+	RtlGetAppContainerNamedObjectPath [0x772382AE+286]
+	RtlGetAppContainerNamedObjectPath [0x7723827E+238]
+</div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Stack Trace:</span>
+                                </div>
+                                
+                                <div class="stack-trace">Traceback (most recent call last):
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 345, in from_call
+    result: Optional[TResult] = func()
+                                ^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 266, in &lt;lambda&gt;
+    lambda: ihook(item=item, **kwds), when=when, reraise=reraise
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\threadexception.py&#34;, line 87, in pytest_runtest_call
+    yield from thread_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\threadexception.py&#34;, line 63, in thread_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\unraisableexception.py&#34;, line 90, in pytest_runtest_call
+    yield from unraisable_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\unraisableexception.py&#34;, line 65, in unraisable_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\logging.py&#34;, line 839, in pytest_runtest_call
+    yield from self._runtest_for(item, &#34;call&#34;)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\logging.py&#34;, line 822, in _runtest_for
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\capture.py&#34;, line 882, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\skipping.py&#34;, line 257, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 181, in pytest_runtest_call
+    raise e
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\runner.py&#34;, line 173, in pytest_runtest_call
+    item.runtest()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\python.py&#34;, line 1836, in runtest
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\_pytest\python.py&#34;, line 193, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\tests\test_iframe.py&#34;, line 38, in test_iframe_editor_text_formatting
+    iframe_page.clear_editor()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\pages\iframe_page.py&#34;, line 39, in clear_editor
+    editor.clear()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\selenium\webdriver\remote\webelement.py&#34;, line 117, in clear
+    self._execute(Command.CLEAR_ELEMENT)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\selenium\webdriver\remote\webelement.py&#34;, line 395, in _execute
+    return self._parent.execute(command, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py&#34;, line 347, in execute
+    self.error_handler.check_response(response)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py&#34;, line 229, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.InvalidElementStateException: Message: invalid element state
+  (Session info: chrome=133.0.6943.142)
+Stacktrace:
+	GetHandleVerifier [0x01170B43+25139]
+	(No symbol) [0x011013F4]
+	(No symbol) [0x00FE0340]
+	(No symbol) [0x0101F923]
+	(No symbol) [0x0104CFCC]
+	(No symbol) [0x0101D9A4]
+	(No symbol) [0x0104D244]
+	(No symbol) [0x0106E778]
+	(No symbol) [0x0104CDC6]
+	(No symbol) [0x0101BDE9]
+	(No symbol) [0x0101D124]
+	GetHandleVerifier [0x01474373+3185251]
+	GetHandleVerifier [0x0149291A+3309578]
+	GetHandleVerifier [0x0148CF42+3286578]
+	GetHandleVerifier [0x01207AE0+643536]
+	(No symbol) [0x0110A20D]
+	(No symbol) [0x011070B8]
+	(No symbol) [0x01107257]
+	(No symbol) [0x010F9E00]
+	BaseThreadInitThunk [0x7552FCC9+25]
+	RtlGetAppContainerNamedObjectPath [0x772382AE+286]
+	RtlGetAppContainerNamedObjectPath [0x7723827E+238]
+
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </section>
+        </div>
+    </div>
+    
+    <script>
+        // Collapsible sections
+        
+        document.getElementById('failure1-btn').addEventListener('click', function() {
+            toggleCollapsible('failure1-content', this.querySelector('i'));
+        });
+        
+        document.getElementById('failure2-btn').addEventListener('click', function() {
+            toggleCollapsible('failure2-content', this.querySelector('i'));
+        });
+        
+        
+        function toggleCollapsible(contentId, icon) {
+            var content = document.getElementById(contentId);
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+        
+        // Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Categories chart
+            const categoryNames = ['UI/Visual Bug','UI/Element Interaction',];
+            const categoryCounts = [1,1,];
+            
+            const categoryCtx = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryNames,
+                    datasets: [{
+                        label: 'Number of Failures',
+                        data: categoryCounts,
+                        backgroundColor: '#1e88e5',
+                        borderColor: '#1565c0',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Bug type chart
+            const bugTypeCtx = document.getElementById('bugTypeChart').getContext('2d');
+            new Chart(bugTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['True Bugs', 'False Positives'],
+                    datasets: [{
+                        data: [2, 0],
+                        backgroundColor: [
+                            '#e53935',
+                            '#43a047'
+                        ],
+                        borderColor: [
+                            '#c62828',
+                            '#2e7d32'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
