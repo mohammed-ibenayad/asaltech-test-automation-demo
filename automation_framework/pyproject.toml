@@ -48,4 +48,4 @@ dev = [
 ]
 
 [project.entry-points."pytest11"]
-ai_analysis = "automation_framework.src.ai_module.pytest_plugin"
+core_automation_framework  = "automation_framework.src.pytest_plugin"
