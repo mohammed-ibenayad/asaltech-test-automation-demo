@@ -1,254 +1,495 @@
-<!-- automation_framework/src/ai_module/reporters/templates/ai_analysis_template.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
+    <title>{{ app_name }} - AI-Powered Test Failure Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+        :root {
+            --primary-color: #0c4da2;
+            --primary-gradient-start: #1565c0;
+            --primary-gradient-end: #0a3a79;
+            --secondary-color: #e8f0fe;
+            --accent-color: #1e88e5;
+            --text-primary: #2c3e50;
+            --text-secondary: #546e7a;
+            --text-tertiary: #78909c;
+            --background-color: #f5f7fa;
+            --card-background: #ffffff;
+            --border-color: #e1e7ef;
+            --error-color: #e53935;
+            --warning-color: #f57c00;
+            --success-color: #43a047;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            color: var(--text-primary);
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        header {
-            background-color: #f4f4f4;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+        
+        .header {
+            background: linear-gradient(to right, var(--primary-gradient-start), var(--primary-gradient-end));
+            color: white;
+            padding: 24px 32px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-md);
         }
-        h1, h2, h3 {
-            color: #444;
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
-        .summary-box {
+        
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .header-info-item {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
+            align-items: center;
         }
-        .summary-card {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            min-width: 200px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        
+        .header-info-item i {
+            margin-right: 8px;
+            opacity: 0.8;
         }
-        .true-bug {
-            background-color: #ffecec;
-            border-left: 5px solid #f44336;
+        
+        .header-info-item p {
+            font-size: 14px;
+            opacity: 0.9;
         }
-        .false-positive {
-            background-color: #e8f5e9;
-            border-left: 5px solid #4caf50;
+        
+        .panel {
+            background-color: var(--card-background);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
         }
-        .failure-card {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 20px;
+        
+        .section {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+            position: relative;
+            padding-left: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .stat-value.error {
+            color: var(--error-color);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-container {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            height: 300px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .failure-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
         .failure-header {
+            background-color: #fef2f2;
+            border-bottom: 1px solid #fecaca;
+            padding: 16px;
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-        .badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: bold;
+        
+        .failure-title {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--warning-color);
             color: white;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 4px;
         }
-        .badge-high {
-            background-color: #f44336;
+        
+        .status-badge i {
+            margin-right: 4px;
         }
-        .badge-medium {
-            background-color: #ff9800;
+        
+        .failure-body {
+            padding: 16px;
         }
-        .badge-low {
-            background-color: #4caf50;
-        }
+        
         .category-tag {
             display: inline-block;
-            padding: 3px 8px;
-            background-color: #e0e0e0;
-            border-radius: 3px;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
             font-size: 12px;
-            margin-right: 5px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-bottom: 4px;
         }
-        .error-message {
-            background-color: #fff3cd;
-            padding: 10px;
-            border-radius: 3px;
-            margin: 10px 0;
-            font-family: monospace;
+        
+        .detail-item {
+            margin-bottom: 12px;
         }
-        .stack-trace {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 3px;
-            margin: 10px 0;
-            font-family: monospace;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-right: 4px;
         }
-        .collapsible {
+        
+        .detail-text {
+            color: var(--text-primary);
+        }
+        
+        .enterprise-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #d0e1fd;
+            border-radius: 4px;
             cursor: pointer;
-            background-color: #f1f1f1;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-top: 12px;
         }
-        .collapsible:after {
-            content: '\002B';
-            float: right;
-            font-weight: bold;
+        
+        .enterprise-button:hover {
+            background-color: #d6e6ff;
         }
-        .active:after {
-            content: "\2212";
+        
+        .enterprise-button i {
+            margin-left: 8px;
         }
-        .content {
-            padding: 0 18px;
+        
+        .collapsible-content {
+            padding: 0;
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.2s ease-out;
-            background-color: #f9f9f9;
+            transition: max-height 0.3s ease-out;
+            background-color: #f8fafc;
         }
-        .chart-container {
-            width: 100%;
-            max-width: 800px;
-            height: 400px;
-            margin: 30px auto;
+        
+        .error-block {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 12px 0;
+            color: #b91c1c;
+        }
+        
+        .stack-trace {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 12px 0;
+            color: var(--text-tertiary);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>{{ title }}</h1>
-            <p>Generated: {{ timestamp }}</p>
-            <p>Model: {{ metadata.provider }} / {{ metadata.model }}</p>
-            <p>Analysis Duration: {{ "%.2f"|format(metadata.analysis_duration_seconds) }} seconds</p>
-        </header>
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> {{ app_name }} - AI-Powered Failure Analysis</h1>
+            <div class="header-info">
+                <div class="header-info-item">
+                    <i class="fas fa-calendar"></i>
+                    <p>Generated: {{ timestamp }}</p>
+                </div>
+                <div class="header-info-item">
+                    <i class="fas fa-microchip"></i>
+                    <p>Model: {{ metadata.provider }} / {{ metadata.model }}</p>
+                </div>
+                <div class="header-info-item">
+                    <i class="fas fa-clock"></i>
+                    <p>Analysis Duration: {{ "%.2f"|format(metadata.analysis_duration_seconds) }} seconds</p>
+                </div>
+            </div>
+        </div>
         
-        <section>
-            <h2>Analysis Summary</h2>
-            <div class="summary-box">
-                <div class="summary-card">
-                    <h3>Total Failures</h3>
-                    <p class="stat">{{ stats.total }}</p>
+        <div class="panel">
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Analysis Summary</h2>
                 </div>
-                <div class="summary-card">
-                    <h3>True Bugs</h3>
-                    <p class="stat">{{ stats.true_bugs }} ({{ "%.1f"|format(stats.true_bug_percentage) }}%)</p>
-                </div>
-                <div class="summary-card">
-                    <h3>False Positives</h3>
-                    <p class="stat">{{ stats.false_positives }}</p>
-                </div>
-                <div class="summary-card">
-                    <h3>High Confidence</h3>
-                    <p class="stat">{{ stats.high_confidence }}</p>
-                </div>
-            </div>
-            
-            <!-- Category Distribution -->
-            <h3>Issue Categories</h3>
-            <div class="summary-box">
-                {% for category, count in stats.categories.items() %}
-                <div class="summary-card">
-                    <h4>{{ category }}</h4>
-                    <p>{{ count }} failures</p>
-                </div>
-                {% endfor %}
-            </div>
-            
-            <!-- Charts -->
-            <div class="chart-container">
-                <canvas id="categoriesChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="bugTypeChart"></canvas>
-            </div>
-        </section>
-        
-        <section>
-            <h2>Failure Analysis Details</h2>
-            
-            {% for result in results %}
-            <div class="failure-card {% if result.analysis.probability_true_bug > 0.5 %}true-bug{% else %}false-positive{% endif %}">
-                <div class="failure-header">
-                    <h3>{{ result.test_name }}</h3>
-                    <div>
-                        {% if result.analysis.probability_true_bug > 0.8 %}
-                            <span class="badge badge-high">High Probability Bug</span>
-                        {% elif result.analysis.probability_true_bug > 0.5 %}
-                            <span class="badge badge-medium">Medium Probability Bug</span>
-                        {% else %}
-                            <span class="badge badge-low">Low Probability Bug</span>
-                        {% endif %}
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Failures</div>
+                        <div class="stat-value">{{ stats.total }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">True Bugs</div>
+                        <div class="stat-value error">{{ stats.true_bugs }} ({{ "%.1f"|format(stats.true_bug_percentage) }}%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">False Positives</div>
+                        <div class="stat-value">{{ stats.false_positives }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">High Confidence</div>
+                        <div class="stat-value">{{ stats.high_confidence }}</div>
                     </div>
                 </div>
                 
-                <div>
-                    <p><strong>Category:</strong> 
-                        <span class="category-tag">{{ result.analysis.category }}</span>
-                        <span class="category-tag">{{ result.analysis.subcategory }}</span>
-                    </p>
-                    <p><strong>Confidence:</strong> {{ "%.1f"|format(result.analysis.confidence * 100) }}%</p>
-                    <p><strong>Analysis:</strong> {{ result.analysis.reasoning }}</p>
-                    
-                    {% if result.analysis.suggested_fix %}
-                    <p><strong>Suggested Fix:</strong> {{ result.analysis.suggested_fix }}</p>
-                    {% endif %}
+                <div class="section-header">
+                    <h2 class="section-title">Issue Categories</h2>
                 </div>
                 
-                <button class="collapsible">Failure Details</button>
-                <div class="content">
-                    <p><strong>Error Type:</strong> {{ result.failure_data.error_type }}</p>
-                    <div class="error-message">{{ result.failure_data.error_message }}</div>
-                    <p><strong>Stack Trace:</strong></p>
-                    <div class="stack-trace">{{ result.failure_data.stack_trace }}</div>
+                <div class="stats-grid">
+                    {% for category, count in stats.categories.items() %}
+                    <div class="stat-card">
+                        <div class="stat-title">{{ category }}</div>
+                        <div class="stat-value">{{ count }} failures</div>
+                    </div>
+                    {% endfor %}
                 </div>
-            </div>
-            {% endfor %}
-        </section>
+                
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Failures by Category</div>
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Bug Classification</div>
+                        <canvas id="bugTypeChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Failure Analysis Details</h2>
+                </div>
+                
+                {% for result in results %}
+                <div class="failure-card">
+                    <div class="failure-header">
+                        <div class="failure-title">{{ result.test_name }}</div>
+                        <div class="status-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {% if result.analysis.probability_true_bug > 0.8 %}
+                                High Probability Bug
+                            {% elif result.analysis.probability_true_bug > 0.5 %}
+                                Medium Probability Bug
+                            {% else %}
+                                Low Probability Bug
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="failure-body">
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="category-tag">{{ result.analysis.category }}</span>
+                            <span class="category-tag">{{ result.analysis.subcategory }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Confidence:</span>
+                            <span class="detail-text">{{ "%.1f"|format(result.analysis.confidence * 100) }}%</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Analysis:</span>
+                            <p class="detail-text">{{ result.analysis.reasoning }}</p>
+                        </div>
+                        
+                        {% if result.analysis.suggested_fix %}
+                        <div class="detail-item">
+                            <span class="detail-label">Suggested Fix:</span>
+                            <p class="detail-text">{{ result.analysis.suggested_fix }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <button class="enterprise-button" id="failure{{ loop.index }}-btn">
+                            View Failure Details
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        
+                        <div class="collapsible-content" id="failure{{ loop.index }}-content">
+                            <div style="padding: 16px;">
+                                <div class="detail-item">
+                                    <span class="detail-label">Error Type:</span>
+                                    <span class="detail-text">{{ result.failure_data.error_type }}</span>
+                                </div>
+                                
+                                <div class="error-block">{{ result.failure_data.error_message }}</div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Stack Trace:</span>
+                                </div>
+                                
+                                <div class="stack-trace">{{ result.failure_data.stack_trace }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+        </div>
     </div>
     
-    <!-- Include Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // JavaScript for collapsible sections
-        var coll = document.getElementsByClassName("collapsible");
-        for (var i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                var content = this.nextElementSibling;
-                if (content.style.maxHeight) {
-                    content.style.maxHeight = null;
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
+        // Collapsible sections
+        {% for i in range(1, results|length + 1) %}
+        document.getElementById('failure{{ i }}-btn').addEventListener('click', function() {
+            toggleCollapsible('failure{{ i }}-content', this.querySelector('i'));
+        });
+        {% endfor %}
+        
+        function toggleCollapsible(contentId, icon) {
+            var content = document.getElementById(contentId);
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.className = 'fas fa-chevron-up';
+            }
         }
         
-        // Create charts
+        // Charts
         document.addEventListener('DOMContentLoaded', function() {
             // Categories chart
             const categoryNames = [{% for category in stats.categories.keys() %}'{{ category }}',{% endfor %}];
@@ -260,15 +501,16 @@
                 data: {
                     labels: categoryNames,
                     datasets: [{
-                        label: 'Failures by Category',
+                        label: 'Number of Failures',
                         data: categoryCounts,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: '#1e88e5',
+                        borderColor: '#1565c0',
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -289,25 +531,22 @@
                     datasets: [{
                         data: [{{ stats.true_bugs }}, {{ stats.false_positives }}],
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.6)',
-                            'rgba(75, 192, 192, 0.6)'
+                            '#e53935',
+                            '#43a047'
                         ],
                         borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(75, 192, 192, 1)'
+                            '#c62828',
+                            '#2e7d32'
                         ],
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Bug Classification'
+                            position: 'bottom'
                         }
                     }
                 }

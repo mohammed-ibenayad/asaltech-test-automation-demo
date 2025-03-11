@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import datetime
 import logging
+import re
 from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger(__name__)
@@ -54,11 +55,12 @@ class AIReportGenerator:
     def _create_default_template(self, template_dir):
         """Create a default template if none exists"""
         template_path = template_dir / "ai_analysis_template.html"
+        # Create a simple template - in practice, we'll use the full template defined separately
         with open(template_path, "w", encoding="utf-8") as f:
             f.write("""<!DOCTYPE html>
 <html>
 <head>
-    <title>{{ title }}</title>
+    <title>{{ app_name }} - AI-Powered Test Failure Analysis</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -70,7 +72,7 @@ class AIReportGenerator:
 <body>
     <div class="container">
         <header>
-            <h1>{{ title }}</h1>
+            <h1>{{ app_name }} - AI-Powered Test Failure Analysis</h1>
             <p>Generated: {{ timestamp }}</p>
             <p>Model: {{ metadata.provider }} / {{ metadata.model }}</p>
         </header>
@@ -99,6 +101,41 @@ class AIReportGenerator:
 </body>
 </html>""")
         logger.info(f"Created default template at {template_path}")
+
+    def _extract_app_name(self, results):
+        """
+        Extract app name from test paths in results
+        
+        Args:
+            results (dict): Analysis results containing test paths
+            
+        Returns:
+            str: Extracted app name or default value
+        """
+        # Default app name if extraction fails
+        default_app_name = "Test Automation"
+        
+        try:
+            # Try to extract from the first result's test_name
+            if not results.get("results"):
+                return default_app_name
+                
+            first_result = results["results"][0]
+            test_name = first_result.get("test_name", "")
+            
+            # Example pattern: "examples/web_the_internet/tests/test_file.py"
+            pattern = r"examples/([^/]+)/"
+            match = re.search(pattern, test_name)
+            
+            if match:
+                # Convert to title case and replace underscores with spaces
+                app_name = match.group(1).replace("_", " ").title()
+                return app_name
+                
+            return default_app_name
+        except Exception as e:
+            logger.warning(f"Error extracting app name: {e}")
+            return default_app_name
     
     def generate_analysis_report(self, analysis_results, report_name=None):
         """
@@ -117,9 +154,13 @@ class AIReportGenerator:
         
         report_path = self.output_dir / report_name
         
+        # Extract app name from test results
+        app_name = self._extract_app_name(analysis_results)
+        
         # Prepare template data
         template_data = {
-            "title": "AI-Powered Failure Analysis",
+            "app_name": app_name,
+            "title": f"{app_name} - AI-Powered Failure Analysis",
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "metadata": analysis_results.get("metadata", {}),
             "results": analysis_results.get("results", [])
@@ -138,7 +179,7 @@ class AIReportGenerator:
             <!DOCTYPE html>
             <html>
             <head>
-                <title>{{ title }}</title>
+                <title>{{ app_name }} - AI-Powered Test Failure Analysis</title>
                 <style>
                     body { font-family: Arial, sans-serif; }
                     .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -146,7 +187,7 @@ class AIReportGenerator:
             </head>
             <body>
                 <div class="container">
-                    <h1>{{ title }}</h1>
+                    <h1>{{ app_name }} - AI-Powered Test Failure Analysis</h1>
                     <p>Generated: {{ timestamp }}</p>
                     <p>Model: {{ metadata.provider }} / {{ metadata.model }}</p>
                     <h2>Analysis Summary</h2>
@@ -168,7 +209,7 @@ class AIReportGenerator:
             report_html = f"""
             <html>
             <body>
-                <h1>{template_data['title']}</h1>
+                <h1>{app_name} - AI-Powered Test Failure Analysis</h1>
                 <p>Generated: {template_data['timestamp']}</p>
                 <p>Error rendering full report: {str(e)}</p>
             </body>
