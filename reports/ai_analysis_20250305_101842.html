@@ -1,0 +1,529 @@
+<!-- automation_framework/src/ai_module/reporters/templates/ai_analysis_template.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Failure Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            color: #444;
+        }
+        .summary-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .true-bug {
+            background-color: #ffecec;
+            border-left: 5px solid #f44336;
+        }
+        .false-positive {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+        }
+        .failure-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .failure-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-high {
+            background-color: #f44336;
+        }
+        .badge-medium {
+            background-color: #ff9800;
+        }
+        .badge-low {
+            background-color: #4caf50;
+        }
+        .category-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .error-message {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .stack-trace {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .collapsible {
+            cursor: pointer;
+            background-color: #f1f1f1;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-weight: bold;
+        }
+        .collapsible:after {
+            content: '\002B';
+            float: right;
+            font-weight: bold;
+        }
+        .active:after {
+            content: "\2212";
+        }
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: #f9f9f9;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: 30px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI-Powered Failure Analysis</h1>
+            <p>Generated: 2025-03-05 10:18:42</p>
+            <p>Model: openai / gpt-4o</p>
+            <p>Analysis Duration: 11.81 seconds</p>
+        </header>
+        
+        <section>
+            <h2>Analysis Summary</h2>
+            <div class="summary-box">
+                <div class="summary-card">
+                    <h3>Total Failures</h3>
+                    <p class="stat">2</p>
+                </div>
+                <div class="summary-card">
+                    <h3>True Bugs</h3>
+                    <p class="stat">1 (50.0%)</p>
+                </div>
+                <div class="summary-card">
+                    <h3>False Positives</h3>
+                    <p class="stat">1</p>
+                </div>
+                <div class="summary-card">
+                    <h3>High Confidence</h3>
+                    <p class="stat">0</p>
+                </div>
+            </div>
+            
+            <!-- Category Distribution -->
+            <h3>Issue Categories</h3>
+            <div class="summary-box">
+                
+                <div class="summary-card">
+                    <h4>UI Interaction Failure</h4>
+                    <p>1 failures</p>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>Test Automation Issue</h4>
+                    <p>1 failures</p>
+                </div>
+                
+            </div>
+            
+            <!-- Charts -->
+            <div class="chart-container">
+                <canvas id="categoriesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="bugTypeChart"></canvas>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Failure Analysis Details</h2>
+            
+            
+            <div class="failure-card true-bug">
+                <div class="failure-header">
+                    <h3>examples/web_the_internet/tests/test_iframe.py::TestIFrame::test_iframe_editor_basic_interaction</h3>
+                    <div>
+                        
+                            <span class="badge badge-medium">Medium Probability Bug</span>
+                        
+                    </div>
+                </div>
+                
+                <div>
+                    <p><strong>Category:</strong> 
+                        <span class="category-tag">UI Interaction Failure</span>
+                        <span class="category-tag">IFrame Content Load</span>
+                    </p>
+                    <p><strong>Confidence:</strong> 75.0%</p>
+                    <p><strong>Analysis:</strong> The test is failing because the expected default text &#39;Your content goes here.&#39; is not found in the iframe editor. This could be due to the iframe content not loading properly or a change in the default content. The stack trace does not indicate any environmental issues like timeouts or connectivity problems, which suggests a potential issue with the application under test.</p>
+                    
+                    
+                    <p><strong>Suggested Fix:</strong> Verify that the iframe content is correctly loaded before performing the assertion. This may involve adding a wait for the iframe to load completely or checking if the default text has been updated in the application.</p>
+                    
+                </div>
+                
+                <button class="collapsible">Failure Details</button>
+                <div class="content">
+                    <p><strong>Error Type:</strong> AssertionError</p>
+                    <div class="error-message">Default text not found in editor
+assert &#39;Your content goes here.&#39; in &#39;&#39;</div>
+                    <p><strong>Stack Trace:</strong></p>
+                    <div class="stack-trace">Traceback (most recent call last):
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 345, in from_call
+    result: Optional[TResult] = func()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 266, in &lt;lambda&gt;
+    lambda: ihook(item=item, **kwds), when=when, reraise=reraise
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\threadexception.py&#34;, line 87, in pytest_runtest_call
+    yield from thread_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\threadexception.py&#34;, line 63, in thread_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\unraisableexception.py&#34;, line 90, in pytest_runtest_call
+    yield from unraisable_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\unraisableexception.py&#34;, line 65, in unraisable_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\logging.py&#34;, line 839, in pytest_runtest_call
+    yield from self._runtest_for(item, &#34;call&#34;)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\logging.py&#34;, line 822, in _runtest_for
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\capture.py&#34;, line 882, in pytest_runtest_call
+    return (yield)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\skipping.py&#34;, line 257, in pytest_runtest_call
+    return (yield)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 181, in pytest_runtest_call
+    raise e
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 173, in pytest_runtest_call
+    item.runtest()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\python.py&#34;, line 1836, in runtest
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\python.py&#34;, line 193, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\tests\test_iframe.py&#34;, line 19, in test_iframe_editor_basic_interaction
+    assert &#34;Your content goes here.&#34; in default_text, &#34;Default text not found in editor&#34;
+AssertionError: Default text not found in editor
+assert &#39;Your content goes here.&#39; in &#39;&#39;
+</div>
+                </div>
+            </div>
+            
+            <div class="failure-card false-positive">
+                <div class="failure-header">
+                    <h3>examples/web_the_internet/tests/test_iframe.py::TestIFrame::test_iframe_editor_text_formatting</h3>
+                    <div>
+                        
+                            <span class="badge badge-low">Low Probability Bug</span>
+                        
+                    </div>
+                </div>
+                
+                <div>
+                    <p><strong>Category:</strong> 
+                        <span class="category-tag">Test Automation Issue</span>
+                        <span class="category-tag">Invalid Element State</span>
+                    </p>
+                    <p><strong>Confidence:</strong> 80.0%</p>
+                    <p><strong>Analysis:</strong> The error &#39;InvalidElementStateException&#39; suggests that the test is trying to interact with a web element that is not in a state to be interacted with, such as being disabled or not visible. This is often caused by timing issues where the element is not ready for interaction when the command is executed. The stack trace does not indicate a code bug but rather a potential synchronization issue.</p>
+                    
+                    
+                    <p><strong>Suggested Fix:</strong> Implement explicit waits to ensure that the element is in the correct state before attempting to interact with it. This can be done using WebDriverWait in Selenium to wait for the element to become interactable.</p>
+                    
+                </div>
+                
+                <button class="collapsible">Failure Details</button>
+                <div class="content">
+                    <p><strong>Error Type:</strong> InvalidElementStateException</p>
+                    <div class="error-message">Message: invalid element state
+  (Session info: chrome=133.0.6943.142)
+Stacktrace:
+	GetHandleVerifier [0x00550B43+25139]
+	(No symbol) [0x004E13F4]
+	(No symbol) [0x003C0340]
+	(No symbol) [0x003FF923]
+	(No symbol) [0x0042CFCC]
+	(No symbol) [0x003FD9A4]
+	(No symbol) [0x0042D244]
+	(No symbol) [0x0044E778]
+	(No symbol) [0x0042CDC6]
+	(No symbol) [0x003FBDE9]
+	(No symbol) [0x003FD124]
+	GetHandleVerifier [0x00854373+3185251]
+	GetHandleVerifier [0x0087291A+3309578]
+	GetHandleVerifier [0x0086CF42+3286578]
+	GetHandleVerifier [0x005E7AE0+643536]
+	(No symbol) [0x004EA20D]
+	(No symbol) [0x004E70B8]
+	(No symbol) [0x004E7257]
+	(No symbol) [0x004D9E00]
+	BaseThreadInitThunk [0x7552FCC9+25]
+	RtlGetAppContainerNamedObjectPath [0x772382AE+286]
+	RtlGetAppContainerNamedObjectPath [0x7723827E+238]
+</div>
+                    <p><strong>Stack Trace:</strong></p>
+                    <div class="stack-trace">Traceback (most recent call last):
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 345, in from_call
+    result: Optional[TResult] = func()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 266, in &lt;lambda&gt;
+    lambda: ihook(item=item, **kwds), when=when, reraise=reraise
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\threadexception.py&#34;, line 87, in pytest_runtest_call
+    yield from thread_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\threadexception.py&#34;, line 63, in thread_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\unraisableexception.py&#34;, line 90, in pytest_runtest_call
+    yield from unraisable_exception_runtest_hook()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\unraisableexception.py&#34;, line 65, in unraisable_exception_runtest_hook
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\logging.py&#34;, line 839, in pytest_runtest_call
+    yield from self._runtest_for(item, &#34;call&#34;)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\logging.py&#34;, line 822, in _runtest_for
+    yield
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\capture.py&#34;, line 882, in pytest_runtest_call
+    return (yield)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 122, in _multicall
+    teardown.throw(exception)  # type: ignore[union-attr]
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\skipping.py&#34;, line 257, in pytest_runtest_call
+    return (yield)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 181, in pytest_runtest_call
+    raise e
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\runner.py&#34;, line 173, in pytest_runtest_call
+    item.runtest()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\python.py&#34;, line 1836, in runtest
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_hooks.py&#34;, line 513, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_manager.py&#34;, line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 139, in _multicall
+    raise exception.with_traceback(exception.__traceback__)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\pluggy\_callers.py&#34;, line 103, in _multicall
+    res = hook_impl.function(*args)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\_pytest\python.py&#34;, line 193, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\tests\test_iframe.py&#34;, line 38, in test_iframe_editor_text_formatting
+    iframe_page.clear_editor()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\examples\web_the_internet\pages\iframe_page.py&#34;, line 39, in clear_editor
+    editor.clear()
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\selenium\webdriver\remote\webelement.py&#34;, line 117, in clear
+    self._execute(Command.CLEAR_ELEMENT)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\selenium\webdriver\remote\webelement.py&#34;, line 395, in _execute
+    return self._parent.execute(command, params)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\selenium\webdriver\remote\webdriver.py&#34;, line 347, in execute
+    self.error_handler.check_response(response)
+  File &#34;C:\Users\mayad\mytools\asaltech-test-automation-demo\venv\lib\site-packages\selenium\webdriver\remote\errorhandler.py&#34;, line 229, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.InvalidElementStateException: Message: invalid element state
+  (Session info: chrome=133.0.6943.142)
+Stacktrace:
+	GetHandleVerifier [0x00550B43+25139]
+	(No symbol) [0x004E13F4]
+	(No symbol) [0x003C0340]
+	(No symbol) [0x003FF923]
+	(No symbol) [0x0042CFCC]
+	(No symbol) [0x003FD9A4]
+	(No symbol) [0x0042D244]
+	(No symbol) [0x0044E778]
+	(No symbol) [0x0042CDC6]
+	(No symbol) [0x003FBDE9]
+	(No symbol) [0x003FD124]
+	GetHandleVerifier [0x00854373+3185251]
+	GetHandleVerifier [0x0087291A+3309578]
+	GetHandleVerifier [0x0086CF42+3286578]
+	GetHandleVerifier [0x005E7AE0+643536]
+	(No symbol) [0x004EA20D]
+	(No symbol) [0x004E70B8]
+	(No symbol) [0x004E7257]
+	(No symbol) [0x004D9E00]
+	BaseThreadInitThunk [0x7552FCC9+25]
+	RtlGetAppContainerNamedObjectPath [0x772382AE+286]
+	RtlGetAppContainerNamedObjectPath [0x7723827E+238]
+
+</div>
+                </div>
+            </div>
+            
+        </section>
+    </div>
+    
+    <!-- Include Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // JavaScript for collapsible sections
+        var coll = document.getElementsByClassName("collapsible");
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+        
+        // Create charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Categories chart
+            const categoryNames = ['UI Interaction Failure','Test Automation Issue',];
+            const categoryCounts = [1,1,];
+            
+            const categoryCtx = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryNames,
+                    datasets: [{
+                        label: 'Failures by Category',
+                        data: categoryCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Bug type chart
+            const bugTypeCtx = document.getElementById('bugTypeChart').getContext('2d');
+            new Chart(bugTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['True Bugs', 'False Positives'],
+                    datasets: [{
+                        data: [1, 1],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Bug Classification'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
