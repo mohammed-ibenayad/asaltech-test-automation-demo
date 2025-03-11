@@ -1,117 +1,178 @@
-# Test Automation Framework
+# ASAL Tech Automation Framework
 
-A comprehensive test automation framework supporting Web, Mobile, and API testing with AI-powered analysis capabilities. This framework demonstrates a strategic approach to test automation with a focus on sustainable, maintainable, and scalable solutions.
+## 🚀 Comprehensive Test Automation Solution
 
-## Project Structure
+### Overview
 
+The ASAL Tech Automation Framework is a robust, scalable, and intelligent test automation platform designed to streamline and enhance your software testing processes. Built with flexibility and intelligence in mind, this framework supports web, mobile, and API testing with cutting-edge AI-powered analysis capabilities.
+
+### 🌟 Key Features
+
+#### Comprehensive Testing Support
+- **Web Testing**: Selenium-based testing with advanced Page Object Model
+- **Mobile Testing**: Appium-powered testing for Android and iOS
+- **API Testing**: Comprehensive RESTful API testing capabilities
+- **Cross-Browser Support**: Chrome, Firefox, Edge, Safari, and more
+
+#### AI-Powered Intelligent Analysis
+- Automated failure categorization
+- Intelligent bug detection
+- Root cause analysis
+- Confidence scoring for test failures
+- Automated suggested fixes
+
+#### Framework Advantages
+- Modular and extensible architecture
+- Easy integration with CI/CD pipelines
+- Configurable across different environments
+- Detailed HTML and AI-powered reporting
+
+### 🛠 Prerequisites
+
+- Python 3.8+
+- pip
+- Virtual environment support
+
+### 📦 Installation
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/your-org/automation-framework.git
+cd automation-framework
 ```
-test-automation-demo/
-├── automation-framework/     # Core automation framework
-│   ├── src/                  # Framework source code
-│   │   ├── core/             # Shared core functionality
-│   │   ├── web/              # Web testing components
-│   │   ├── mobile/           # Mobile testing components
-│   │   ├── api/              # API testing components
-│   │   ├── ai_module/        # AI analysis capabilities
-│   │   └── reporters/        # Reporting functionality
-│   ├── tests/                # Framework test suite
-│   └── config/               # Configuration files
+
+#### 2. Create Virtual Environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+```
+
+#### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
+
+### 🧪 Running Tests
+
+#### Web Testing
+```bash
+# Run all web tests
+pytest examples/web_the_internet/tests/
+
+# Run specific test
+pytest examples/web_the_internet/tests/test_login.py
+
+# Run with specific browser
+pytest --browser=chrome
+pytest --browser=firefox
+
+# Run in headless mode
+pytest --headless
+```
+
+#### Mobile Testing
+```bash
+# Run mobile tests
+pytest examples/mobile_example/tests/
+
+# Specify device/platform
+pytest --device=android --platform=11
+```
+
+#### API Testing
+```bash
+# Run API tests
+pytest examples/api_example/tests/
+```
+
+### 🤖 AI-Powered Analysis
+
+Enable AI-powered failure analysis with the `--analyze-failures` flag:
+
+```bash
+pytest --analyze-failures
+```
+
+This generates:
+- Detailed JSON analysis
+- Interactive HTML report with:
+  - Failure categorization
+  - Confidence scoring
+  - Suggested fixes
+  - Visualizations
+
+### 🔧 Configuration
+
+#### Environment Configuration
+Configuration files are located in `automation_framework/config/`:
+- `dev.yaml`: Development environment settings
+- `staging.yaml`: Staging environment settings
+- `prod.yaml`: Production environment settings
+
+#### AI Analysis Configuration
+Configure AI providers in `.env`:
+```
+OPENAI_API_KEY=your_openai_key
+DEEPSEEK_API_KEY=your_deepseek_key
+```
+
+### 📊 Reporting
+
+The framework generates multiple report types:
+- Console output
+- HTML reports
+- AI-powered analysis reports
+- Detailed logs
+
+### 🔍 Project Structure
+```
+automation-framework/
 │
-├── demo-app/                 # Demo applications for testing
-│   ├── web-app/              # Demo web application
-│   ├── mobile-app/           # Demo mobile application
-│   └── api/                  # Demo API service
+├── automation_framework/      # Core framework
+│   ├── src/
+│   │   ├── web/               # Web testing components
+│   │   ├── mobile/            # Mobile testing components
+│   │   ├── api/               # API testing components
+│   │   └── ai_module/         # AI analysis capabilities
+│   │
+│   └── config/                # Configuration files
 │
-├── docs/                     # Documentation
-│   ├── strategy/             # Test Automation Strategy (Milestone 1)
-│   ├── framework/            # Framework Documentation (Milestone 2)
-│   └── ai-analysis/          # AI Analysis Documentation
+├── examples/                  # Example test implementations
+│   ├── web_example/
+│   ├── mobile_example/
+│   └── api_example/
 │
-├── examples/                 # Complete example implementations
-│   ├── web_example/          # Web testing example
-│   ├── mobile_example/       # Mobile testing example
-│   └── api_example/          # API testing example
-│
-└── demo-results/             # Sample test results and reports
+├── docs/                      # Documentation
+└── reports/                   # Test reports
 ```
 
-## Key Components
+### 🤝 Contributing
 
-### 1. Test Automation Strategy (Milestone 1)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Our approach begins with strategy, not just scripts. The `docs/strategy/` directory contains:
-- Strategic approach documentation
-- Test prioritization guidelines
-- ROI calculation templates
-- Milestone 1 deliverables
+### 📋 Best Practices
 
-### 2. Test Automation Framework (Milestone 2)
+1. Always use Page Object Model for web tests
+2. Implement explicit waits
+3. Keep tests independent
+4. Use meaningful test and method names
+5. Leverage AI analysis for continuous improvement
 
-A production-ready framework supporting:
-- **Web Testing**: Selenium-based web testing with Page Object Model
-- **Mobile Testing**: Appium-based mobile testing for Android and iOS
-- **API Testing**: RESTful API testing with request/response validation
+### 🔒 License
 
-### 3. AI-Powered Test Analysis
+Distributed under the MIT License. See `LICENSE` for more information.
 
-Intelligent analysis capabilities:
-- Failure pattern recognition
-- False positive detection
-- Smart test result classification
-- Test optimization recommendations
+### 📞 Contact
 
-## Usage Examples
+ASAL Tech - `info@asaltech.com`
 
-Each testing type includes complete examples:
+Project Link: `https://github.com/your-org/automation-framework`
 
-### Web Testing
+---
 
-```python
-# Example from examples/web_example/tests/test_login.py
-def test_valid_login(browser):
-    login_page = LoginPage(browser)
-    login_page.navigate()
-    login_page.login("valid_user", "valid_password")
-    assert login_page.is_logged_in()
-```
-
-### Mobile Testing
-
-```python
-# Example from examples/mobile_example/tests/test_login.py
-def test_valid_login(app_driver):
-    login_screen = LoginScreen(app_driver)
-    login_screen.enter_credentials("valid_user", "valid_password")
-    login_screen.tap_login_button()
-    assert login_screen.is_logged_in()
-```
-
-### API Testing
-
-```python
-# Example from examples/api_example/tests/test_auth.py
-def test_valid_login_api():
-    auth_service = AuthService()
-    response = auth_service.login("valid_user", "valid_password")
-    assert response.status_code == 200
-    assert "token" in response.json()
-```
-
-## Getting Started
-
-1. Clone this repository
-2. Run the setup script: `./scripts/setup.sh`
-3. Explore the examples: `./scripts/run_demo.sh`
-4. Read the documentation in the `docs/` directory
-
-## Framework Features
-
-- **Cross-platform core**: Shared interfaces with platform-specific implementations
-- **Modular design**: Mix and match components based on your needs
-- **Reporting**: Comprehensive HTML reports with dashboards
-- **CI/CD integration**: GitHub Actions workflows included
-- **AI-powered analysis**: Intelligent test result classification
-
-## License
-
-This project is licensed under the terms of the LICENSE file included in this repository.
+**🌈 Happy Automated Testing!**
