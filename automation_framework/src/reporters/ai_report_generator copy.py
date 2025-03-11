@@ -21,7 +21,7 @@ class AIReportGenerator:
             output_dir (str): Directory to save reports
         """
         self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True, parents=True)
+        self.output_dir.mkdir(exist_ok=True)
         
         # Set up Jinja2 environment for templates
         # Look for templates in multiple locations to handle different project structures
@@ -177,9 +177,6 @@ class AIReportGenerator:
         
         # Write to file
         try:
-            # Ensure directory exists
-            report_path.parent.mkdir(exist_ok=True, parents=True)
-            
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(report_html)
         except Exception as e:
